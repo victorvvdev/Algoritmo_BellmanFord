@@ -2,7 +2,7 @@
 const vertices = ["S", "A", "B", "C", "D", "E"];
 
 const arestasOriginais = [
-  { origem: "S", destino: "A", custo: 4 },
+  { origem: "S", destino: "A", custo: 3 },
   { origem: "S", destino: "B", custo: 5 },
   { origem: "A", destino: "B", custo: -2 },
   { origem: "A", destino: "C", custo: 6 },
@@ -165,13 +165,16 @@ function main() {
   relatorio("EXPERIMENTO 2 - Com a aresta D → B (-6)", arestasComArmadilha);
 }
 
-if (require.main === module) {
-  try {
-    main();
-  } catch (err) {
-    console.error(`\n[ERRO] ${err.name}: ${err.message}`);
-    process.exit(1);
+if (typeof module !== "undefined" && module.exports) {
+  if (require.main === module) {
+    try {
+      main();
+    } catch (err) {
+      console.error(`\n[ERRO] ${err.name}: ${err.message}`);
+      process.exit(1);
+    }
   }
+  module.exports = { bellmanFord, validarEntrada, rota, vertices, arestasOriginais };
+} else if (typeof window !== "undefined") {
+  window.BellmanFord = { bellmanFord, validarEntrada, rota, vertices, arestasOriginais };
 }
-
-module.exports = { bellmanFord, validarEntrada, rota, vertices, arestasOriginais };

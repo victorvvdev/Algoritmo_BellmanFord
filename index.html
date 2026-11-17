@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Explore caminhos mínimos e ciclos negativos com o algoritmo Bellman-Ford."
+    />
+    <title>Bellman-Ford | Explorador de grafos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Bellman-Ford, início">
+          <span class="brand-mark" aria-hidden="true">G</span>
+          <span>Trabalho<span class="brand-light">06</span></span>
+        </a>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="page-title">
+          <div class="hero-copy">
+            <h1 ><span>Bellman-Ford</span></h1>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="orbit orbit-one"></div>
+            <div class="orbit orbit-two"></div>
+            <span class="art-edge edge-one">4</span>
+            <span class="art-edge edge-two">−2</span>
+            <span class="art-edge edge-three">3</span>
+            <span class="art-node node-s">S</span>
+            <span class="art-node node-a">A</span>
+            <span class="art-node node-b">B</span>
+            <span class="art-node node-c">C</span>
+            <span class="art-node node-d">D</span>
+          </div>
+        </section>
+
+        <div class="workspace">
+          <section class="panel graph-panel" aria-labelledby="graph-title">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">01 / CONFIGURAÇÃO</p>
+                <h2 id="graph-title">Seu grafo</h2>
+              </div>
+              <button class="text-button" id="reset-button" type="button">Restaurar exemplo</button>
+            </div>
+
+            <div class="source-field">
+              <label for="source-select">Vértice de origem</label>
+              <select id="source-select"></select>
+              <span class="field-hint">O ponto de partida para todos os caminhos.</span>
+            </div>
+
+            <div class="edges-heading">
+              <div>
+                <h3>Arestas e pesos</h3>
+                <p>Adicione conexões direcionadas entre os vértices.</p>
+              </div>
+              <span class="edge-count" id="edge-count">0 arestas</span>
+            </div>
+
+            <div class="edge-table-wrap">
+              <table class="edge-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Origem</th>
+                    <th scope="col" aria-label="Direção"></th>
+                    <th scope="col">Destino</th>
+                    <th scope="col">Peso</th>
+                    <th scope="col"><span class="sr-only">Ação</span></th>
+                  </tr>
+                </thead>
+                <tbody id="edge-list"></tbody>
+              </table>
+              <p class="empty-edges" id="empty-edges" hidden>
+                Nenhuma aresta adicionada. O grafo está vazio.
+              </p>
+            </div>
+
+            <form class="add-edge-form" id="edge-form">
+              <label class="sr-only" for="edge-from">Origem da nova aresta</label>
+              <select id="edge-from" aria-label="Origem da nova aresta"></select>
+              <span class="form-arrow" aria-hidden="true">→</span>
+              <label class="sr-only" for="edge-to">Destino da nova aresta</label>
+              <select id="edge-to" aria-label="Destino da nova aresta"></select>
+              <label class="sr-only" for="edge-weight">Peso da nova aresta</label>
+              <input id="edge-weight" type="number" step="any" placeholder="Peso" required />
+              <button class="add-button" type="submit" aria-label="Adicionar aresta">+</button>
+            </form>
+
+            <div class="panel-footer">
+              <span class="tip-icon" aria-hidden="true">i</span>
+              Pesos negativos são permitidos. Ciclos negativos serão detectados.
+            </div>
+          </section>
+
+          <section class="results-column" aria-labelledby="results-title">
+            <div class="panel results-panel">
+              <div class="panel-heading result-heading">
+                <div>
+                  <p class="section-kicker">02 / RESULTADO</p>
+                  <h2 id="results-title">Caminhos mínimos</h2>
+                </div>
+                <button class="run-button" id="run-button" type="button">
+                  <span aria-hidden="true">▶</span> Executar
+                </button>
+              </div>
+
+              <div class="status-banner" id="status-banner" role="status" aria-live="polite">
+                <span class="status-indicator"></span>
+                <span id="status-message">Pronto para analisar o grafo.</span>
+              </div>
+
+              <section class="graph-card" aria-labelledby="graph-map-title">
+                <div class="graph-heading">
+                  <div>
+                    <p class="section-kicker">MAPA DA MISSÃO</p>
+                    <h3 id="graph-map-title">Rotas do grafo</h3>
+                  </div>
+                  <label class="target-field">
+                    <span>Destacar rota até</span>
+                    <select id="path-target" aria-label="Destacar rota até"></select>
+                  </label>
+                </div>
+                <div class="cycle-alert" id="cycle-alert" role="status" aria-live="polite" hidden>
+                  <span aria-hidden="true">!</span>
+                  <span id="cycle-alert-message">Ciclo negativo detectado neste grafo.</span>
+                </div>
+                <div class="route-alert" id="route-alert" role="status" aria-live="polite" hidden></div>
+                <div class="graph-canvas">
+                  <svg
+                    id="graph-map"
+                    viewBox="0 0 600 270"
+                    role="img"
+                    aria-label="Mapa direcionado dos esconderijos e suas rotas"
+                    preserveAspectRatio="xMidYMid meet"
+                  ></svg>
+                </div>
+                <div class="graph-legend" aria-label="Legenda do mapa">
+                  <span><i class="legend-swatch legend-route"></i>Rota</span>
+                  <span><i class="legend-swatch legend-selected"></i>Caminho mínimo</span>
+                  <span><i class="legend-swatch legend-negative"></i>Peso negativo</span>
+                  <span><i class="legend-swatch legend-trap"></i>Ciclo negativo</span>
+                </div>
+              </section>
+
+              <div class="results-table-wrap">
+                <table class="results-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Vértice</th>
+                      <th scope="col">Distância</th>
+                      <th scope="col">Caminho</th>
+                    </tr>
+                  </thead>
+                  <tbody id="results-list">
+                    <tr class="placeholder-row">
+                      <td colspan="3">Execute o algoritmo para ver os resultados.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="summary-grid">
+                <article class="summary-card">
+                  <span class="summary-icon reachable-icon" aria-hidden="true">↗</span>
+                  <div><p>Alcançáveis</p><strong id="reachable-count">—</strong></div>
+                </article>
+                <article class="summary-card">
+                  <span class="summary-icon cycle-icon" aria-hidden="true">↻</span>
+                  <div><p>Ciclo negativo</p><strong id="cycle-status">—</strong></div>
+                </article>
+                <article class="summary-card">
+                  <span class="summary-icon reachable-icon" aria-hidden="true">↓</span>
+                  <div><p>Menor risco</p><strong id="minimum-risk">—</strong></div>
+                </article>
+                <article class="summary-card">
+                  <span class="summary-icon reachable-icon" aria-hidden="true">↑</span>
+                  <div><p>Maior risco</p><strong id="maximum-risk">—</strong></div>
+                </article>
+                <article class="summary-card">
+                  <span class="summary-icon cycle-icon" aria-hidden="true">!</span>
+                  <div><p>Armadilhas</p><strong class="summary-list" id="trap-list">—</strong></div>
+                </article>
+              </div>
+            </div>
+
+            <aside class="insight-card">
+              <span class="insight-icon" aria-hidden="true">✳</span>
+              <div>
+                <h3>Por que Bellman-Ford?</h3>
+                <p>
+                  Diferente de Dijkstra, ele aceita pesos negativos e sinaliza quando
+                  um ciclo torna os caminhos indefinidos.
+                </p>
+              </div>
+            </aside>
+          </section>
+        </div>
+        <p class="feedback" id="feedback" role="alert" hidden></p>
+      </main>
+    </div>
+  </body>
+</html>
